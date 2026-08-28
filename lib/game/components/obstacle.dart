@@ -1,14 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:flame/components.dart';
+import 'package:flame/collisions.dart';
 
 class Obstacle extends PositionComponent {
   Obstacle({
     required Vector2 position,
-    required Vector2 size,
   }) : super(
           position: position,
-          size: size,
+          size: Vector2(60, 60),
         );
+
+  @override
+  Future<void> onLoad() async {
+    await super.onLoad();
+
+    add(
+      RectangleHitbox(),
+    );
+  }
 
   @override
   void render(Canvas canvas) {
@@ -27,11 +36,9 @@ class Obstacle extends PositionComponent {
   void update(double dt) {
     super.update(dt);
 
-    // Obstacle yukarıdan aşağı hareket ediyor.
     position.y += 200 * dt;
 
-    // Ekranın altından çıktıysa kaldır.
-    if (position.y > 800) {
+    if (position.y > findGame()!.size.y) {
       removeFromParent();
     }
   }

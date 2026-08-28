@@ -20,7 +20,6 @@ class ObstacleSpawner extends Component {
 
     timer += dt;
 
-    // Her 1.5 saniyede bir obstacle oluştur.
     if (timer >= 1.5) {
       timer = 0;
       spawnObstacle();
@@ -28,21 +27,28 @@ class ObstacleSpawner extends Component {
   }
 
   void spawnObstacle() {
-  const obstacleWidth = 60.0;
-  const obstacleHeight = 60.0;
+    const obstacleWidth = 60.0;
+    const obstacleHeight = 60.0;
 
-  const sideMargin = 40.0;
+    const sideMargin = 40.0;
 
-  final minX = sideMargin;
-  final maxX = game.size.x - obstacleWidth - sideMargin;
+    final minX = sideMargin;
+    final maxX = game.size.x - obstacleWidth - sideMargin;
 
-  final x = minX + random.nextDouble() * (maxX - minX);
+    final x = minX + random.nextDouble() * (maxX - minX);
 
-  final obstacle = Obstacle(
-    position: Vector2(x, -obstacleHeight),
-    size: Vector2(obstacleWidth, obstacleHeight),
-  );
+    final obstacle = Obstacle(
+      position: Vector2(
+        x,
+        -obstacleHeight,
+      ),
+    );
 
-  game.add(obstacle);
-}
+    obstacle.size = Vector2(
+      obstacleWidth,
+      obstacleHeight,
+    );
+
+    game.add(obstacle);
+  }
 }
