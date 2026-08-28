@@ -4,6 +4,7 @@ import 'package:flame/collisions.dart';
 import 'package:flame/events.dart';
 
 import 'obstacle.dart';
+import '../stardy_game.dart';
 
 class Player extends PositionComponent
     with DragCallbacks, CollisionCallbacks {
@@ -37,8 +38,15 @@ class Player extends PositionComponent
     );
   }
 
-  @override
-  void onDragUpdate(DragUpdateEvent event) {
+    @override
+    void onDragUpdate(DragUpdateEvent event) {
+
+    final game = findGame();
+
+    if (game is StardyGame && game.isGameOver) {
+        return;
+    }
+
     position += event.localDelta;
 
     final gameSize = findGame()?.size;
@@ -50,20 +58,26 @@ class Player extends PositionComponent
 
     position.x = position.x.clamp(0.0, maxX).toDouble();
     position.y = position.y.clamp(0.0, maxY).toDouble();
-  }
+    }
 
-  @override
-  void onCollisionStart(
+    @override
+    void onCollisionStart(
     Set<Vector2> intersectionPoints,
     PositionComponent other,
-  ) {
+    ) {
     super.onCollisionStart(
-      intersectionPoints,
-      other,
+        intersectionPoints,
+        other,
     );
 
     if (other is Obstacle) {
-      print('/n/n/n🔥 COLLISION! PLAYER HIT OBSTACLE!/n/n/n');
+        print('COLLISION!');
+
+        final game = findGame();
+
+        if (game is StardyGame) {
+        game.gameOver();
+        }
     }
-  }
+    }
 }

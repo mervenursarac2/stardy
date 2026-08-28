@@ -18,6 +18,10 @@ class ObstacleSpawner extends Component {
   void update(double dt) {
     super.update(dt);
 
+    if (game.isGameOver) {
+      return;
+    }
+
     timer += dt;
 
     if (timer >= 1.5) {
