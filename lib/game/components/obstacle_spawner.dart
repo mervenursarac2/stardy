@@ -14,13 +14,12 @@ class ObstacleSpawner extends Component {
 
   ObstacleSpawner(this.game);
 
+
   @override
   void update(double dt) {
     super.update(dt);
 
-    if (game.isGameOver) {
-      return;
-    }
+    if (!game.isPlaying) return;
 
     timer += dt;
 

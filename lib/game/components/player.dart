@@ -38,46 +38,47 @@ class Player extends PositionComponent
     );
   }
 
-    @override
-    void onDragUpdate(DragUpdateEvent event) {
-
+  @override
+  void onDragUpdate(DragUpdateEvent event) {
     final game = findGame();
 
     if (game is StardyGame && game.isGameOver) {
-        return;
+      return;
     }
 
     position += event.localDelta;
 
     final gameSize = findGame()?.size;
 
-    if (gameSize == null) return;
+    if (gameSize == null) {
+      return;
+    }
 
     final maxX = gameSize.x - size.x;
     final maxY = gameSize.y - size.y;
 
     position.x = position.x.clamp(0.0, maxX).toDouble();
     position.y = position.y.clamp(0.0, maxY).toDouble();
-    }
+  }
 
-    @override
-    void onCollisionStart(
+  @override
+  void onCollisionStart(
     Set<Vector2> intersectionPoints,
     PositionComponent other,
-    ) {
+  ) {
     super.onCollisionStart(
-        intersectionPoints,
-        other,
+      intersectionPoints,
+      other,
     );
 
     if (other is Obstacle) {
-        print('COLLISION!');
+      print('COLLISION!');
 
-        final game = findGame();
+      final game = findGame();
 
-        if (game is StardyGame) {
+      if (game is StardyGame) {
         game.gameOver();
-        }
+      }
     }
-    }
+  }
 }
