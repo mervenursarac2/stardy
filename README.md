@@ -1,16 +1,45 @@
-# marsky_case_study
+# STARDY - Star Space Runner
 
-A new Flutter project.
+**Flutter** ve **Flame Game Engine** kullanılarak geliştirilmiş 2D sonsuz koşu (endless runner) oyunudur.
 
-## Getting Started
+---
 
-This project is a starting point for a Flutter application.
+## 🚀 Özellikler & Oyun Mekanikleri
 
-A few resources to get you started if this is your first Flutter project:
+- **Flame Component System (FCS):** Oyuncu (`Player`), engeller (`Obstacle`), arkaplan parallax efekti ve spawn mekanizmaları modüler bileşen mimarisiyle ayrılmıştır.
+- **Karakter Kontrolü:** Ekrana dokunma ve sürükleme (`DragCallbacks`) ile akıcı roket hareketi.
+- **Çarpışma Tespiti (Collision Detection):** Flame'in yerleşik `Hitbox` ve `HasCollisionDetection` mekanizmalarıyla optimize edilmiş çarpışma algılama.
+- **Dinamik Zorluk Seviyesi:** Hayatta kalınan süreye bağlı olarak engellerin hızının ve çıkış sıklığının kademeli olarak artması.
+- **State Management (Provider):** Oyun dışı UI durumları, ses/ayarlar ve en yüksek skor (High Score) yönetimi.
+- **Asset Preload:** Bellek sızıntılarını ve takılmaları önlemek adına görsel varlıkların oyun öncesi önbelleğe alınması (`images.loadAll`).
+- **Cyberpunk / Retro HUD:** Özel neon arayüzler (Main Menu, HUD, Pause ve Game Over ekranları).
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+---
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## 🛠️ Kullanılan Teknolojiler & Paketler
+
+- **Flutter SDK:** ^3.6.0
+- **Flame Engine:** ^1.30.1
+- **State Management:** Provider
+- **İkon & Araçlar:** flutter_launcher_icons
+
+---
+
+## 📁 Proje Dizin Yapısı
+
+```text
+lib/
+├── game/
+│   ├── components/
+│   │   ├── obstacle.dart
+│   │   ├── obstacle_spawner.dart
+│   │   └── player.dart
+│   └── stardy_game.dart
+├── state/
+│   └── game_state_provider.dart
+├── ui/
+│   ├── game_hud.dart
+│   ├── game_over_overlay.dart
+│   ├── main_menu.dart
+│   └── pause_overlay.dart
+└── main.dart
