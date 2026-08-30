@@ -14,9 +14,26 @@ enum GameState {
 class StardyGame extends FlameGame with HasCollisionDetection {
   GameState gameState = GameState.menu;
 
+  // ==============================
+  // SCORE
+  // ==============================
+
+  double elapsedTime = 0;
+
+  int get score => (elapsedTime * 100).floor();
+
+  double get plasmaPercent {
+    // Şimdilik görsel olarak 78%.
+    // Daha sonra player'ın durumuna bağlayabiliriz.
+    return 0.78;
+  }
+
   bool get isPlaying => gameState == GameState.playing;
   bool get isGameOver => gameState == GameState.gameOver;
-  double score = 0;
+
+  // ==============================
+  // LOAD
+  // ==============================
 
   @override
   Future<void> onLoad() async {
@@ -25,22 +42,30 @@ class StardyGame extends FlameGame with HasCollisionDetection {
     pauseEngine();
   }
 
-  // ==========================================
+  // ==============================
+  // UPDATE
+  // ==============================
+
+  @override
+  void update(double dt) {
+    super.update(dt);
+
+    if (isPlaying) {
+      elapsedTime += dt;
+    }
+  }
+
+  // ==============================
   // START GAME
-  // ==========================================
+  // ==============================
 
-  Future<void> startGame() async {
-    // Her yeni oyundan önce motoru durdur.
-    pauseEngine();
+  void startGame() {
+    _clearGame();
 
-    // Önce eski oyunu tamamen temizle.
-    await _clearGame();
+    elapsedTime = 0;
 
-    // State'i playing yap.
-    score = 0;
     gameState = GameState.playing;
 
-    // Yeni Player.
     add(
       Player(
         position: Vector2(
@@ -50,57 +75,46 @@ class StardyGame extends FlameGame with HasCollisionDetection {
       ),
     );
 
-    // Yeni ObstacleSpawner.
     add(
       ObstacleSpawner(this),
     );
 
-    // Overlay'leri düzenle.
     overlays.remove('MainMenu');
     overlays.remove('GameOver');
+    overlays.remove('Pause');
     overlays.add('GameHud');
 
-    // Yeni oyunu başlat.
     resumeEngine();
-
-    print('NEW GAME STARTED');
   }
 
-  // ==========================================
+  // ==============================
   // GAME OVER
-  // ==========================================
+  // ==============================
 
   void gameOver() {
-    // Zaten Game Over ise tekrar çalıştırma.
     if (!isPlaying) return;
 
     gameState = GameState.gameOver;
 
-    // Oyunun fizik/update döngüsünü durdur.
     pauseEngine();
 
     overlays.remove('GameHud');
     overlays.add('GameOver');
 
-    print('GAME OVER');
+    print('GAME OVER - SCORE: $score');
   }
 
-  // ==========================================
-  // PLAY AGAIN
-  // ==========================================
+  // ==============================
+  // RESTART
+  // ==============================
 
-  Future<void> restartGame() async {
-    // Motoru durdur.
-    pauseEngine();
+  void restartGame() {
+    _clearGame();
 
-    // Eski oyunu tamamen temizle.
-    await _clearGame();
+    elapsedTime = 0;
 
-    // Yeni oyun state'i.
-    score = 0;
     gameState = GameState.playing;
 
-    // Yeni Player.
     add(
       Player(
         position: Vector2(
@@ -110,80 +124,68 @@ class StardyGame extends FlameGame with HasCollisionDetection {
       ),
     );
 
-    // Yeni ObstacleSpawner.
     add(
       ObstacleSpawner(this),
     );
 
-    // Overlay'leri düzenle.
     overlays.remove('GameOver');
     overlays.remove('MainMenu');
+    overlays.remove('Pause');
     overlays.add('GameHud');
 
-    // Yeni oyunu başlat.
     resumeEngine();
-
-    print('GAME RESTARTED');
   }
 
-  // ==========================================
+  // ==============================
   // MAIN MENU
-  // ==========================================
+  // ==============================
 
-  Future<void> returnToMainMenu() async {
-    // Motoru hemen durdur.
+  void returnToMainMenu() {
     pauseEngine();
 
-    // Oyundaki bütün componentleri temizle.
-    await _clearGame();
+    _clearGame();
 
-    // State artık menu.
+    elapsedTime = 0;
+
     gameState = GameState.menu;
 
-    // Overlay'leri düzenle.
     overlays.remove('GameOver');
     overlays.remove('GameHud');
+    overlays.remove('Pause');
     overlays.add('MainMenu');
-
-    print('RETURNED TO MAIN MENU');
   }
 
-  // ==========================================
-  // CLEAR GAME
-  // ==========================================
+  // ==============================
+  // PAUSE
+  // ==============================
 
-  Future<void> _clearGame() async {
-    // Player'ları bul.
-    final players = children.whereType<Player>().toList();
-
-    // Spawner'ları bul.
-    final spawners =
-        children.whereType<ObstacleSpawner>().toList();
-
-    // Obstacle'ları bul.
-    final obstacles =
-        children.whereType<Obstacle>().toList();
-
-    // Hepsini kaldır.
-    removeAll([
-      ...players,
-      ...spawners,
-      ...obstacles,
-    ]);
-
-    print(
-      'GAME CLEARED: '
-      '${players.length} player, '
-      '${spawners.length} spawner, '
-      '${obstacles.length} obstacles',
-    );
-  }
-  @override
-  void update(double dt) {
-    super.update(dt);
-
+  void togglePause() {
     if (!isPlaying) return;
 
-    score += dt;
+    if (paused) {
+      resumeEngine();
+      overlays.remove('Pause');
+    } else {
+      pauseEngine();
+      overlays.add('Pause');
+    }
+  }
+
+  // ==============================
+  // CLEAR
+  // ==============================
+
+  void _clearGame() {
+    children.whereType<Player>().forEach((player) {
+      player.removeFromParent();
+    });
+
+    children.whereType<ObstacleSpawner>().forEach((spawner) {
+      spawner.removeFromParent();
+    });
+
+    children.whereType<Obstacle>().forEach((obstacle) {
+      obstacle.removeFromParent();
+    });
   }
 }

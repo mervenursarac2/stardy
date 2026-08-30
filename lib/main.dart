@@ -5,6 +5,7 @@ import 'game/stardy_game.dart';
 import 'ui/main_menu.dart';
 import 'ui/game_hud.dart';
 import 'ui/game_over_overlay.dart';
+import 'ui/pause_overlay.dart';
 
 void main() {
   final game = StardyGame();
@@ -25,6 +26,9 @@ void main() {
         'GameOver': (context, game) {
           return GameOverOverlay(game: game as StardyGame);
         },
+        'Pause': (context, game) {
+          return PauseOverlay(game: game as StardyGame);
+  },
       },
     ),
   );
