@@ -37,9 +37,31 @@ class GameOverOverlay extends StatelessWidget {
 
             const SizedBox(height: 24),
 
+            const Text(
+            'SCORE',
+            style: TextStyle(
+                color: Color(0xFF00F2FF),
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 3,
+            ),
+            ),
+
+            const SizedBox(height: 6),
+
+            Text(
+            game.score.floor().toString().padLeft(3, '0'),
+            style: const TextStyle(
+                color: Colors.white,
+                fontSize: 28,
+                fontWeight: FontWeight.bold,
+            ),
+            ),
+
+            const SizedBox(height: 24),
+
             ElevatedButton(
               onPressed: () {
-                game.overlays.remove('GameOver');
                 game.restartGame();
               },
               child: const Text('PLAY AGAIN'),
@@ -48,10 +70,10 @@ class GameOverOverlay extends StatelessWidget {
             const SizedBox(height: 12),
 
             TextButton(
-            onPressed: () {
+              onPressed: () {
                 game.returnToMainMenu();
-            },
-            child: const Text('MAIN MENU'),
+              },
+              child: const Text('MAIN MENU'),
             ),
           ],
         ),

@@ -1,4 +1,3 @@
-
 import 'package:flame/game.dart';
 import 'package:flame/components.dart';
 
@@ -17,13 +16,12 @@ class StardyGame extends FlameGame with HasCollisionDetection {
 
   bool get isPlaying => gameState == GameState.playing;
   bool get isGameOver => gameState == GameState.gameOver;
+  double score = 0;
 
   @override
   Future<void> onLoad() async {
     await super.onLoad();
 
-    // Oyun başlangıçta çalışmayacak.
-    // Sadece MainMenu gösterilecek.
     pauseEngine();
   }
 
@@ -31,13 +29,18 @@ class StardyGame extends FlameGame with HasCollisionDetection {
   // START GAME
   // ==========================================
 
-  void startGame() {
-    // Eski oyunun bütün componentlerini temizle.
-    _clearGame();
+  Future<void> startGame() async {
+    // Her yeni oyundan önce motoru durdur.
+    pauseEngine();
 
+    // Önce eski oyunu tamamen temizle.
+    await _clearGame();
+
+    // State'i playing yap.
+    score = 0;
     gameState = GameState.playing;
 
-    // Player oluştur.
+    // Yeni Player.
     add(
       Player(
         position: Vector2(
@@ -47,18 +50,20 @@ class StardyGame extends FlameGame with HasCollisionDetection {
       ),
     );
 
-    // Obstacle spawner oluştur.
+    // Yeni ObstacleSpawner.
     add(
       ObstacleSpawner(this),
     );
 
-    // UI overlaylerini düzenle.
+    // Overlay'leri düzenle.
     overlays.remove('MainMenu');
     overlays.remove('GameOver');
     overlays.add('GameHud');
 
-    // Oyunu başlat.
+    // Yeni oyunu başlat.
     resumeEngine();
+
+    print('NEW GAME STARTED');
   }
 
   // ==========================================
@@ -66,10 +71,12 @@ class StardyGame extends FlameGame with HasCollisionDetection {
   // ==========================================
 
   void gameOver() {
+    // Zaten Game Over ise tekrar çalıştırma.
     if (!isPlaying) return;
 
     gameState = GameState.gameOver;
 
+    // Oyunun fizik/update döngüsünü durdur.
     pauseEngine();
 
     overlays.remove('GameHud');
@@ -82,13 +89,18 @@ class StardyGame extends FlameGame with HasCollisionDetection {
   // PLAY AGAIN
   // ==========================================
 
-  void restartGame() {
-    // Eski oyunu tamamen temizle.
-    _clearGame();
+  Future<void> restartGame() async {
+    // Motoru durdur.
+    pauseEngine();
 
+    // Eski oyunu tamamen temizle.
+    await _clearGame();
+
+    // Yeni oyun state'i.
+    score = 0;
     gameState = GameState.playing;
 
-    // Yeni player.
+    // Yeni Player.
     add(
       Player(
         position: Vector2(
@@ -98,59 +110,80 @@ class StardyGame extends FlameGame with HasCollisionDetection {
       ),
     );
 
-    // Yeni obstacle spawner.
+    // Yeni ObstacleSpawner.
     add(
       ObstacleSpawner(this),
     );
 
-    // UI.
+    // Overlay'leri düzenle.
     overlays.remove('GameOver');
     overlays.remove('MainMenu');
     overlays.add('GameHud');
 
-    // Yeni oyun başlat.
+    // Yeni oyunu başlat.
     resumeEngine();
+
+    print('GAME RESTARTED');
   }
 
   // ==========================================
   // MAIN MENU
   // ==========================================
 
-  void returnToMainMenu() {
-    // Oyunu durdur.
+  Future<void> returnToMainMenu() async {
+    // Motoru hemen durdur.
     pauseEngine();
 
-    // Eski oyun componentlerini temizle.
-    _clearGame();
+    // Oyundaki bütün componentleri temizle.
+    await _clearGame();
 
-    // State'i menu yap.
+    // State artık menu.
     gameState = GameState.menu;
 
-    // UI.
+    // Overlay'leri düzenle.
     overlays.remove('GameOver');
     overlays.remove('GameHud');
     overlays.add('MainMenu');
+
+    print('RETURNED TO MAIN MENU');
   }
 
   // ==========================================
   // CLEAR GAME
   // ==========================================
 
-  void _clearGame() {
-    // Player'ları temizle.
-    children.whereType<Player>().forEach((player) {
-      player.removeFromParent();
-    });
+  Future<void> _clearGame() async {
+    // Player'ları bul.
+    final players = children.whereType<Player>().toList();
 
-    // Spawner'ları temizle.
-    children.whereType<ObstacleSpawner>().forEach((spawner) {
-      spawner.removeFromParent();
-    });
+    // Spawner'ları bul.
+    final spawners =
+        children.whereType<ObstacleSpawner>().toList();
 
-    // Ekrandaki obstacle'ları temizle.
-    children.whereType<Obstacle>().forEach((obstacle) {
-      obstacle.removeFromParent();
-    });
+    // Obstacle'ları bul.
+    final obstacles =
+        children.whereType<Obstacle>().toList();
+
+    // Hepsini kaldır.
+    removeAll([
+      ...players,
+      ...spawners,
+      ...obstacles,
+    ]);
+
+    print(
+      'GAME CLEARED: '
+      '${players.length} player, '
+      '${spawners.length} spawner, '
+      '${obstacles.length} obstacles',
+    );
+  }
+  @override
+  void update(double dt) {
+    super.update(dt);
+
+    if (!isPlaying) return;
+
+    score += dt;
   }
 }
-
