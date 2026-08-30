@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../game/stardy_game.dart';
+import '../state/game_state_provider.dart';
 
 class MainMenu extends StatelessWidget {
   final StardyGame game;
@@ -17,93 +19,178 @@ class MainMenu extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final stateProvider = context.watch<GameStateProvider>();
+
     return Scaffold(
       backgroundColor: background,
       body: Stack(
         children: [
-          // Background glow
+          // Background Glows
           Positioned(
             top: -100,
             left: -80,
-            child: _GlowCircle(
-              color: purple,
-              size: 260,
-            ),
+            child: _GlowCircle(color: purple, size: 260),
           ),
-
           Positioned(
             bottom: -120,
             right: -80,
-            child: _GlowCircle(
-              color: cyan,
-              size: 280,
-            ),
+            child: _GlowCircle(color: cyan, size: 280),
           ),
 
-          // Main content
           SafeArea(
             child: Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 32,
-                vertical: 28,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
               child: Column(
                 children: [
-                  // Top technical label
-                  Align(
-                    alignment: Alignment.topLeft,
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 7,
-                          height: 7,
-                          decoration: BoxDecoration(
-                            color: cyan,
-                            shape: BoxShape.circle,
-                            boxShadow: [
-                              BoxShadow(
-                                color: cyan.withOpacity(0.8),
-                                blurRadius: 10,
+                  // ==========================================
+                  // TOP BAR: SOUND BUTTON & CORNER HIGH SCORE
+                  // ==========================================
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Sound Toggle Button
+                      IconButton(
+                        onPressed: () => stateProvider.toggleSound(),
+                        icon: Icon(
+                          stateProvider.isSoundEnabled ? Icons.volume_up_rounded : Icons.volume_off_rounded,
+                          color: cyan.withOpacity(0.8),
+                          size: 22,
+                        ),
+                      ),
+
+                      // Corner High Score & System Online
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          ClipPath(
+                            clipper: _CornerCutClipper(cutSize: 8),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF191B28).withOpacity(0.88),
+                                border: Border.all(
+                                  color: Colors.white.withOpacity(0.12),
+                                  width: 1,
+                                ),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  const Text(
+                                    'HIGH SCORE',
+                                    style: TextStyle(
+                                      color: Color(0xFF8E92A8),
+                                      fontSize: 9,
+                                      fontWeight: FontWeight.w800,
+                                      letterSpacing: 1.2,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    _formatScore(stateProvider.highScore),
+                                    style: const TextStyle(
+                                      color: Color(0xFFEBB2FF),
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w800,
+                                      letterSpacing: 0.8,
+                                      fontFamily: 'monospace',
+                                      shadows: [
+                                        Shadow(
+                                          color: purple,
+                                          blurRadius: 8,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+
+                          const SizedBox(height: 8),
+
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Container(
+                                width: 6,
+                                height: 6,
+                                decoration: BoxDecoration(
+                                  color: cyan,
+                                  shape: BoxShape.circle,
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: cyan.withOpacity(0.8),
+                                      blurRadius: 8,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(width: 6),
+                              const Text(
+                                'SYSTEM ONLINE',
+                                style: TextStyle(
+                                  color: cyan,
+                                  fontSize: 9,
+                                  fontWeight: FontWeight.w700,
+                                  letterSpacing: 1.5,
+                                ),
                               ),
                             ],
                           ),
-                        ),
-                        const SizedBox(width: 10),
-                        const Text(
-                          'SYSTEM ONLINE',
-                          style: TextStyle(
-                            color: cyan,
-                            fontSize: 11,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 2,
-                          ),
-                        ),
-                      ],
-                    ),
+                        ],
+                      ),
+                    ],
                   ),
 
                   const Spacer(),
 
-                  // Logo
+                  // ==========================================
+                  // CENTER CONTENT
+                  // ==========================================
+                  // Neon Rocket Icon
+                  Container(
+                    width: 72,
+                    height: 72,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: purple.withOpacity(0.1),
+                      boxShadow: [
+                        BoxShadow(
+                          color: purple.withOpacity(0.3),
+                          blurRadius: 20,
+                          spreadRadius: 2,
+                        ),
+                      ],
+                    ),
+                    child: const Icon(
+                      Icons.rocket_launch_rounded,
+                      color: Color(0xFFEBB2FF),
+                      size: 42,
+                    ),
+                  ),
+
+                  const SizedBox(height: 18),
+
+                  // Game Title
                   const Text(
                     'STARDY',
                     style: TextStyle(
                       color: textColor,
-                      fontSize: 52,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 6,
+                      fontSize: 48,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: 5,
                       height: 1,
                       shadows: [
-                        Shadow(
-                          color: purple,
-                          blurRadius: 22,
-                        ),
+                        Shadow(color: purple, blurRadius: 25),
                       ],
                     ),
                   ),
 
-                  const SizedBox(height: 14),
+                  const SizedBox(height: 8),
 
+                  // Subtitle
                   const Text(
                     'STAR SPACE RUNNER',
                     style: TextStyle(
@@ -114,82 +201,66 @@ class MainMenu extends StatelessWidget {
                     ),
                   ),
 
-                  const SizedBox(height: 18),
+                  const SizedBox(height: 28),
 
-                  // Decorative line
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Container(
-                        width: 45,
-                        height: 1,
-                        color: purple,
-                      ),
-                      const SizedBox(width: 8),
-                      Container(
-                        width: 7,
-                        height: 7,
-                        decoration: BoxDecoration(
-                          color: purple,
-                          shape: BoxShape.circle,
-                          boxShadow: [
-                            BoxShadow(
-                              color: purple.withOpacity(0.9),
-                              blurRadius: 10,
-                            ),
-                          ],
+                  // START GAME BUTTON
+                  Container(
+                    width: double.infinity,
+                    constraints: const BoxConstraints(maxWidth: 280),
+                    height: 50,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(6),
+                      boxShadow: [
+                        BoxShadow(
+                          color: purple.withOpacity(0.35),
+                          blurRadius: 12,
+                        ),
+                      ],
+                    ),
+                    child: OutlinedButton(
+                      onPressed: () {
+                        game.startGame();
+                      },
+                      style: OutlinedButton.styleFrom(
+                        backgroundColor: const Color(0xFF131524).withOpacity(0.85),
+                        side: const BorderSide(color: purple, width: 1.8),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(6),
                         ),
                       ),
-                      const SizedBox(width: 8),
-                      Container(
-                        width: 45,
-                        height: 1,
-                        color: purple,
+                      child: const Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.play_arrow_rounded, color: Colors.white, size: 22),
+                          SizedBox(width: 8),
+                          Text(
+                            'START GAME',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: 2,
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
 
                   const Spacer(),
 
-                  // Start button
-                _NeonButton(
-                    text: 'START GAME',
-                    color: purple,
-                    onPressed: () {
-                    game.overlays.remove('MainMenu');
-                    game.overlays.add('GameHud');
-
-                    game.startGame();
-                    game.resumeEngine();
-                },
-                ),
-
-                  const SizedBox(height: 18),
-
-                  // Secondary button
-                  _NeonButton(
-                    text: 'SETTINGS',
-                    color: cyan,
-                    outlined: true,
-                    onPressed: () {
-                      // Settings'i daha sonra ekleyeceğiz.
-                    },
-                  ),
-
-                  const SizedBox(height: 35),
-
-                  // Version / status
+                  // Footer version info
                   const Text(
                     'MISSION CONTROL  •  v1.0',
                     style: TextStyle(
-                      color: Color(0xFF9D8BA0),
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF7A7085),
+                      fontSize: 9,
+                      fontWeight: FontWeight.w700,
                       letterSpacing: 1.5,
                     ),
                   ),
 
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 8),
                 ],
               ),
             ),
@@ -198,64 +269,42 @@ class MainMenu extends StatelessWidget {
       ),
     );
   }
-}
 
-class _NeonButton extends StatelessWidget {
-  final String text;
-  final Color color;
-  final VoidCallback onPressed;
-  final bool outlined;
-
-  const _NeonButton({
-    required this.text,
-    required this.color,
-    required this.onPressed,
-    this.outlined = false,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: 260,
-      height: 54,
-      child: ElevatedButton(
-        onPressed: onPressed,
-        style: ElevatedButton.styleFrom(
-          elevation: 0,
-          backgroundColor: outlined
-              ? Colors.transparent
-              : color.withOpacity(0.16),
-          foregroundColor: Colors.white,
-          side: BorderSide(
-            color: color,
-            width: 2,
-          ),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(24),
-          ),
-          shadowColor: color,
-        ),
-        child: Text(
-          text,
-          style: const TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.bold,
-            letterSpacing: 2,
-          ),
-        ),
-      ),
+  String _formatScore(int score) {
+    final str = score.toString();
+    if (str.length <= 3) return str;
+    return str.replaceAllMapped(
+      RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+      (Match m) => '${m[1]},',
     );
   }
+}
+
+class _CornerCutClipper extends CustomClipper<Path> {
+  final double cutSize;
+  _CornerCutClipper({this.cutSize = 8});
+
+  @override
+  Path getClip(Size size) {
+    final path = Path();
+    path.moveTo(cutSize, 0);
+    path.lineTo(size.width, 0);
+    path.lineTo(size.width, size.height);
+    path.lineTo(0, size.height);
+    path.lineTo(0, cutSize);
+    path.close();
+    return path;
+  }
+
+  @override
+  bool shouldReclip(covariant CustomClipper<Path> oldClipper) => false;
 }
 
 class _GlowCircle extends StatelessWidget {
   final Color color;
   final double size;
 
-  const _GlowCircle({
-    required this.color,
-    required this.size,
-  });
+  const _GlowCircle({required this.color, required this.size});
 
   @override
   Widget build(BuildContext context) {

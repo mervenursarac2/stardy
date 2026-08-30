@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flame/game.dart';
 import 'package:flame/components.dart';
 
+import '../state/game_state_provider.dart';
 import 'components/player.dart';
 import 'components/obstacle_spawner.dart';
 import 'components/obstacle.dart';
@@ -14,6 +15,10 @@ enum GameState {
 }
 
 class StardyGame extends FlameGame with HasCollisionDetection {
+  final GameStateProvider gameStateProvider;
+
+  StardyGame({required this.gameStateProvider});
+
   GameState gameState = GameState.menu;
 
   double elapsedTime = 0;
@@ -31,6 +36,14 @@ class StardyGame extends FlameGame with HasCollisionDetection {
   @override
   Future<void> onLoad() async {
     await super.onLoad();
+
+    // ==========================================
+    // ASSET PRELOAD (ÖNBELLEKLEME)
+    // ==========================================
+    await images.loadAll([
+      'rocket.png',
+      'meteor.png',
+    ]);
 
     // Dinamik Uzay ve Yıldız Arkaplanı
     add(_ProceduralSpaceParallax());
@@ -77,6 +90,9 @@ class StardyGame extends FlameGame with HasCollisionDetection {
 
     gameState = GameState.gameOver;
     pauseEngine();
+
+    // En yüksek skoru State Management üzerinden güncelle
+    gameStateProvider.updateScore(score);
 
     overlays.remove('GameHud');
     overlays.add('GameOver');
@@ -138,14 +154,13 @@ class StardyGame extends FlameGame with HasCollisionDetection {
   }
 }
 
-/// Derin uzay nebulasını ve aşağı doğru akan yıldızları çizen bileşen
 class _ProceduralSpaceParallax extends PositionComponent with HasGameRef<StardyGame> {
   final List<Vector2> _starsLayer1 = [];
   final List<Vector2> _starsLayer2 = [];
   final Random _rnd = Random();
 
   @override
-  int get priority => -10; // Her zaman en arkada çizilmesi için
+  int get priority => -10;
 
   @override
   Future<void> onLoad() async {
@@ -191,7 +206,6 @@ class _ProceduralSpaceParallax extends PositionComponent with HasGameRef<StardyG
   void render(Canvas canvas) {
     super.render(canvas);
 
-    // Arkaplan Kozmik Mor / Mavi Gradyan
     final bgPaint = Paint()
       ..shader = RadialGradient(
         center: const Alignment(0, -0.4),
@@ -205,13 +219,11 @@ class _ProceduralSpaceParallax extends PositionComponent with HasGameRef<StardyG
 
     canvas.drawRect(Rect.fromLTWH(0, 0, size.x, size.y), bgPaint);
 
-    // Katman 1: Yavaş, loş yıldızlar
     final starPaint1 = Paint()..color = const Color(0xFFD4C0D7).withOpacity(0.5);
     for (var s in _starsLayer1) {
       canvas.drawCircle(Offset(s.x, s.y), 1.2, starPaint1);
     }
 
-    // Katman 2: Hızlı, parlak neon yıldızlar
     final starPaint2 = Paint()
       ..color = const Color(0xFF00F2FF)
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 1);

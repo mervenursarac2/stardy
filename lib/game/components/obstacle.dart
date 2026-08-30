@@ -6,11 +6,13 @@ import '../stardy_game.dart';
 
 class Obstacle extends SpriteComponent with HasGameRef<StardyGame> {
   final Random random = Random();
+  final double speedMultiplier;
   late final double speed;
   late final double rotationSpeed;
 
   Obstacle({
     required Vector2 position,
+    this.speedMultiplier = 1.0,
   }) : super(
           position: position,
           size: Vector2(56, 56),
@@ -21,18 +23,16 @@ class Obstacle extends SpriteComponent with HasGameRef<StardyGame> {
   Future<void> onLoad() async {
     await super.onLoad();
 
-    // images/meteor.png görselini yüklüyoruz
     sprite = await gameRef.loadSprite('meteor.png');
-
-    // Netlik ve yumuşatma ayarları
     paint.filterQuality = FilterQuality.high;
     paint.isAntiAlias = true;
 
-    // Rastgele düşüş hızı ve dönme hızı
-    speed = 220 + random.nextDouble() * 90;
-    rotationSpeed = (random.nextBool() ? 1 : -1) * (1.5 + random.nextDouble() * 2.0);
+    // Temel hız çarpanla çarpılarak hesaplanır
+    final baseSpeed = 220 + random.nextDouble() * 80;
+    speed = baseSpeed * speedMultiplier;
 
-    // Çarpışma alanı (Dairesel Hitbox)
+    rotationSpeed = (random.nextBool() ? 1 : -1) * (1.5 + random.nextDouble() * 2.0) * speedMultiplier;
+
     add(
       CircleHitbox(
         radius: size.x * 0.4,
@@ -44,16 +44,11 @@ class Obstacle extends SpriteComponent with HasGameRef<StardyGame> {
   @override
   void update(double dt) {
     super.update(dt);
-
     if (!gameRef.isPlaying) return;
 
-    // Aşağı düşüş
     position.y += speed * dt;
-
-    // Kendi etrafında fütüristik dönüş
     angle += rotationSpeed * dt;
 
-    // Ekranın altından çıkınca bellekten temizleme
     if (position.y > gameRef.size.y + 100) {
       removeFromParent();
     }
