@@ -1,3 +1,5 @@
+import 'dart:math';
+import 'package:flutter/material.dart';
 import 'package:flame/game.dart';
 import 'package:flame/components.dart';
 
@@ -14,37 +16,27 @@ enum GameState {
 class StardyGame extends FlameGame with HasCollisionDetection {
   GameState gameState = GameState.menu;
 
-  // ==============================
-  // SCORE
-  // ==============================
-
   double elapsedTime = 0;
+  final ValueNotifier<double> hudNotifier = ValueNotifier<double>(0);
 
   int get score => (elapsedTime * 100).floor();
-
-  double get plasmaPercent {
-    // Şimdilik görsel olarak 78%.
-    // Daha sonra player'ın durumuna bağlayabiliriz.
-    return 0.78;
-  }
+  double get plasmaPercent => 0.78;
 
   bool get isPlaying => gameState == GameState.playing;
   bool get isGameOver => gameState == GameState.gameOver;
 
-  // ==============================
-  // LOAD
-  // ==============================
+  @override
+  Color backgroundColor() => const Color(0xFF11131D);
 
   @override
   Future<void> onLoad() async {
     await super.onLoad();
 
+    // Dinamik Uzay ve Yıldız Arkaplanı
+    add(_ProceduralSpaceParallax());
+
     pauseEngine();
   }
-
-  // ==============================
-  // UPDATE
-  // ==============================
 
   @override
   void update(double dt) {
@@ -52,32 +44,25 @@ class StardyGame extends FlameGame with HasCollisionDetection {
 
     if (isPlaying) {
       elapsedTime += dt;
+      hudNotifier.value = elapsedTime;
     }
   }
 
-  // ==============================
-  // START GAME
-  // ==============================
-
   void startGame() {
     _clearGame();
-
     elapsedTime = 0;
-
     gameState = GameState.playing;
 
     add(
       Player(
         position: Vector2(
-          size.x / 2 - 30,
-          size.y - 120,
+          size.x / 2,
+          size.y - 140,
         ),
       ),
     );
 
-    add(
-      ObstacleSpawner(this),
-    );
+    add(ObstacleSpawner(this));
 
     overlays.remove('MainMenu');
     overlays.remove('GameOver');
@@ -86,47 +71,32 @@ class StardyGame extends FlameGame with HasCollisionDetection {
 
     resumeEngine();
   }
-
-  // ==============================
-  // GAME OVER
-  // ==============================
 
   void gameOver() {
     if (!isPlaying) return;
 
     gameState = GameState.gameOver;
-
     pauseEngine();
 
     overlays.remove('GameHud');
     overlays.add('GameOver');
-
-    print('GAME OVER - SCORE: $score');
   }
-
-  // ==============================
-  // RESTART
-  // ==============================
 
   void restartGame() {
     _clearGame();
-
     elapsedTime = 0;
-
     gameState = GameState.playing;
 
     add(
       Player(
         position: Vector2(
-          size.x / 2 - 30,
-          size.y - 120,
+          size.x / 2,
+          size.y - 140,
         ),
       ),
     );
 
-    add(
-      ObstacleSpawner(this),
-    );
+    add(ObstacleSpawner(this));
 
     overlays.remove('GameOver');
     overlays.remove('MainMenu');
@@ -136,17 +106,10 @@ class StardyGame extends FlameGame with HasCollisionDetection {
     resumeEngine();
   }
 
-  // ==============================
-  // MAIN MENU
-  // ==============================
-
   void returnToMainMenu() {
     pauseEngine();
-
     _clearGame();
-
     elapsedTime = 0;
-
     gameState = GameState.menu;
 
     overlays.remove('GameOver');
@@ -155,12 +118,8 @@ class StardyGame extends FlameGame with HasCollisionDetection {
     overlays.add('MainMenu');
   }
 
-  // ==============================
-  // PAUSE
-  // ==============================
-
   void togglePause() {
-    if (!isPlaying) return;
+    if (!isPlaying && gameState != GameState.playing) return;
 
     if (paused) {
       resumeEngine();
@@ -171,21 +130,93 @@ class StardyGame extends FlameGame with HasCollisionDetection {
     }
   }
 
-  // ==============================
-  // CLEAR
-  // ==============================
-
   void _clearGame() {
-    children.whereType<Player>().forEach((player) {
-      player.removeFromParent();
-    });
+    children.whereType<Player>().forEach((p) => p.removeFromParent());
+    children.whereType<ObstacleSpawner>().forEach((s) => s.removeFromParent());
+    children.whereType<Obstacle>().forEach((o) => o.removeFromParent());
+    children.whereType<ParticleSystemComponent>().forEach((pt) => pt.removeFromParent());
+  }
+}
 
-    children.whereType<ObstacleSpawner>().forEach((spawner) {
-      spawner.removeFromParent();
-    });
+/// Derin uzay nebulasını ve aşağı doğru akan yıldızları çizen bileşen
+class _ProceduralSpaceParallax extends PositionComponent with HasGameRef<StardyGame> {
+  final List<Vector2> _starsLayer1 = [];
+  final List<Vector2> _starsLayer2 = [];
+  final Random _rnd = Random();
 
-    children.whereType<Obstacle>().forEach((obstacle) {
-      obstacle.removeFromParent();
-    });
+  @override
+  int get priority => -10; // Her zaman en arkada çizilmesi için
+
+  @override
+  Future<void> onLoad() async {
+    await super.onLoad();
+    size = gameRef.size;
+
+    for (int i = 0; i < 45; i++) {
+      _starsLayer1.add(Vector2(_rnd.nextDouble() * size.x, _rnd.nextDouble() * size.y));
+    }
+    for (int i = 0; i < 25; i++) {
+      _starsLayer2.add(Vector2(_rnd.nextDouble() * size.x, _rnd.nextDouble() * size.y));
+    }
+  }
+
+  @override
+  void onGameResize(Vector2 size) {
+    super.onGameResize(size);
+    this.size = size;
+  }
+
+  @override
+  void update(double dt) {
+    super.update(dt);
+
+    for (var s in _starsLayer1) {
+      s.y += 80 * dt;
+      if (s.y > size.y) {
+        s.y = 0;
+        s.x = _rnd.nextDouble() * size.x;
+      }
+    }
+
+    for (var s in _starsLayer2) {
+      s.y += 180 * dt;
+      if (s.y > size.y) {
+        s.y = 0;
+        s.x = _rnd.nextDouble() * size.x;
+      }
+    }
+  }
+
+  @override
+  void render(Canvas canvas) {
+    super.render(canvas);
+
+    // Arkaplan Kozmik Mor / Mavi Gradyan
+    final bgPaint = Paint()
+      ..shader = RadialGradient(
+        center: const Alignment(0, -0.4),
+        radius: 1.2,
+        colors: [
+          const Color(0xFFBC13FE).withOpacity(0.18),
+          const Color(0xFF00F2FF).withOpacity(0.06),
+          Colors.transparent,
+        ],
+      ).createShader(Rect.fromLTWH(0, 0, size.x, size.y));
+
+    canvas.drawRect(Rect.fromLTWH(0, 0, size.x, size.y), bgPaint);
+
+    // Katman 1: Yavaş, loş yıldızlar
+    final starPaint1 = Paint()..color = const Color(0xFFD4C0D7).withOpacity(0.5);
+    for (var s in _starsLayer1) {
+      canvas.drawCircle(Offset(s.x, s.y), 1.2, starPaint1);
+    }
+
+    // Katman 2: Hızlı, parlak neon yıldızlar
+    final starPaint2 = Paint()
+      ..color = const Color(0xFF00F2FF)
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 1);
+    for (var s in _starsLayer2) {
+      canvas.drawCircle(Offset(s.x, s.y), 1.8, starPaint2);
+    }
   }
 }

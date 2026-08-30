@@ -11,24 +11,22 @@ void main() {
   final game = StardyGame();
 
   runApp(
-    GameWidget(
+    GameWidget<StardyGame>(
       game: game,
       initialActiveOverlays: const ['MainMenu'],
       overlayBuilderMap: {
-        'MainMenu': (context, game) {
-          return MainMenu(game: game as StardyGame);
+        'MainMenu': (BuildContext context, StardyGame game) {
+          return MainMenu(game: game);
         },
-
-        'GameHud': (context, game) {
-          return GameHud(game: game as StardyGame);
+        'GameHud': (BuildContext context, StardyGame game) {
+          return GameHud(game: game);
         },
-
-        'GameOver': (context, game) {
-          return GameOverOverlay(game: game as StardyGame);
+        'GameOver': (BuildContext context, StardyGame game) {
+          return GameOverOverlay(game: game);
         },
-        'Pause': (context, game) {
-          return PauseOverlay(game: game as StardyGame);
-  },
+        'Pause': (BuildContext context, StardyGame game) {
+          return PauseOverlay(game: game);
+        },
       },
     ),
   );
