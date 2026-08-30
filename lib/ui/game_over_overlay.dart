@@ -137,7 +137,7 @@ class _GameOverOverlayState extends State<GameOverOverlay>
                       Column(
                         children: [
                           const Text(
-                            'TOPLAM STARPUAN',
+                            'STARPUAN',
                             style: TextStyle(
                               color: Color(0xFF8E92A8),
                               fontSize: 11,
