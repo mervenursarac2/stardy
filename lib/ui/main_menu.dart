@@ -35,92 +35,46 @@ class MainMenu extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
               child: Column(
                 children: [
-                  // Üst Bar
+                  // Üst Bar (High Score kaldırıldı, System Online & Ses Butonu korundu)
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       IconButton(
                         onPressed: () => stateProvider.toggleSound(),
                         icon: Icon(
-                          stateProvider.isSoundEnabled ? Icons.volume_up_rounded : Icons.volume_off_rounded,
+                          stateProvider.isSoundEnabled
+                              ? Icons.volume_up_rounded
+                              : Icons.volume_off_rounded,
                           color: cyan.withOpacity(0.8),
                           size: 22,
                         ),
                       ),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.end,
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
                         children: [
-                          ClipPath(
-                            clipper: _CornerCutClipper(cutSize: 8),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF191B28).withOpacity(0.88),
-                                border: Border.all(
-                                  color: Colors.white.withOpacity(0.12),
-                                  width: 1,
+                          Container(
+                            width: 6,
+                            height: 6,
+                            decoration: BoxDecoration(
+                              color: cyan,
+                              shape: BoxShape.circle,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: cyan.withOpacity(0.8),
+                                  blurRadius: 8,
                                 ),
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.end,
-                                children: [
-                                  const Text(
-                                    'HIGH SCORE',
-                                    style: TextStyle(
-                                      color: Color(0xFF8E92A8),
-                                      fontSize: 9,
-                                      fontWeight: FontWeight.w800,
-                                      letterSpacing: 1.2,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 2),
-                                  Text(
-                                    _formatScore(stateProvider.highScore),
-                                    style: const TextStyle(
-                                      color: Color(0xFFEBB2FF),
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w800,
-                                      letterSpacing: 0.8,
-                                      fontFamily: 'monospace',
-                                      shadows: [
-                                        Shadow(color: purple, blurRadius: 8),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
+                              ],
                             ),
                           ),
-                          const SizedBox(height: 8),
-                          Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Container(
-                                width: 6,
-                                height: 6,
-                                decoration: BoxDecoration(
-                                  color: cyan,
-                                  shape: BoxShape.circle,
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: cyan.withOpacity(0.8),
-                                      blurRadius: 8,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(width: 6),
-                              const Text(
-                                'SYSTEM ONLINE',
-                                style: TextStyle(
-                                  color: cyan,
-                                  fontSize: 9,
-                                  fontWeight: FontWeight.w700,
-                                  letterSpacing: 1.5,
-                                ),
-                              ),
-                            ],
+                          const SizedBox(width: 6),
+                          const Text(
+                            'SYSTEM ONLINE',
+                            style: TextStyle(
+                              color: cyan,
+                              fontSize: 9,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: 1.5,
+                            ),
                           ),
                         ],
                       ),
@@ -170,7 +124,7 @@ class MainMenu extends StatelessWidget {
                   const SizedBox(height: 8),
 
                   const Text(
-                    'STAR SPACE RUNNER',
+                    'STAR SPACE WORRIER',
                     style: TextStyle(
                       color: cyan,
                       fontSize: 12,
@@ -248,35 +202,6 @@ class MainMenu extends StatelessWidget {
       ),
     );
   }
-
-  String _formatScore(int score) {
-    final str = score.toString();
-    if (str.length <= 3) return str;
-    return str.replaceAllMapped(
-      RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
-      (Match m) => '${m[1]},',
-    );
-  }
-}
-
-class _CornerCutClipper extends CustomClipper<Path> {
-  final double cutSize;
-  _CornerCutClipper({this.cutSize = 8});
-
-  @override
-  Path getClip(Size size) {
-    final path = Path();
-    path.moveTo(cutSize, 0);
-    path.lineTo(size.width, 0);
-    path.lineTo(size.width, size.height);
-    path.lineTo(0, size.height);
-    path.lineTo(0, cutSize);
-    path.close();
-    return path;
-  }
-
-  @override
-  bool shouldReclip(covariant CustomClipper<Path> oldClipper) => false;
 }
 
 class _GlowCircle extends StatelessWidget {
