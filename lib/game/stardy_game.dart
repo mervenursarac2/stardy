@@ -128,10 +128,10 @@ class StardyGame extends FlameGame with HasCollisionDetection {
     elapsedTime = 0;
     gameState = GameState.menu;
 
-    overlays.remove('GameOver');
-    overlays.remove('GameHud');
-    overlays.remove('Pause');
-    overlays.add('MainMenu');
+    overlays.clear();
+    if (buildContext != null) {
+      Navigator.of(buildContext!).pop();
+    }
   }
 
   void togglePause() {

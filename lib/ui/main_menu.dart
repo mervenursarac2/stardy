@@ -1,16 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../game/stardy_game.dart';
 import '../state/game_state_provider.dart';
+import 'arcade_hub.dart';
 
 class MainMenu extends StatelessWidget {
-  final StardyGame game;
-
-  const MainMenu({
-    super.key,
-    required this.game,
-  });
+  const MainMenu({super.key});
 
   static const Color background = Color(0xFF0B0D17);
   static const Color purple = Color(0xFFBC13FE);
@@ -25,7 +20,6 @@ class MainMenu extends StatelessWidget {
       backgroundColor: background,
       body: Stack(
         children: [
-          // Background Glows
           Positioned(
             top: -100,
             left: -80,
@@ -36,20 +30,16 @@ class MainMenu extends StatelessWidget {
             right: -80,
             child: _GlowCircle(color: cyan, size: 280),
           ),
-
           SafeArea(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
               child: Column(
                 children: [
-                  // ==========================================
-                  // TOP BAR: SOUND BUTTON & CORNER HIGH SCORE
-                  // ==========================================
+                  // Üst Bar
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Sound Toggle Button
                       IconButton(
                         onPressed: () => stateProvider.toggleSound(),
                         icon: Icon(
@@ -58,8 +48,6 @@ class MainMenu extends StatelessWidget {
                           size: 22,
                         ),
                       ),
-
-                      // Corner High Score & System Online
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
@@ -96,10 +84,7 @@ class MainMenu extends StatelessWidget {
                                       letterSpacing: 0.8,
                                       fontFamily: 'monospace',
                                       shadows: [
-                                        Shadow(
-                                          color: purple,
-                                          blurRadius: 8,
-                                        ),
+                                        Shadow(color: purple, blurRadius: 8),
                                       ],
                                     ),
                                   ),
@@ -107,9 +92,7 @@ class MainMenu extends StatelessWidget {
                               ),
                             ),
                           ),
-
                           const SizedBox(height: 8),
-
                           Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
@@ -146,10 +129,7 @@ class MainMenu extends StatelessWidget {
 
                   const Spacer(),
 
-                  // ==========================================
-                  // CENTER CONTENT
-                  // ==========================================
-                  // Neon Rocket Icon
+                  // Orta Başlık & İkon
                   Container(
                     width: 72,
                     height: 72,
@@ -173,7 +153,6 @@ class MainMenu extends StatelessWidget {
 
                   const SizedBox(height: 18),
 
-                  // Game Title
                   const Text(
                     'STARDY',
                     style: TextStyle(
@@ -190,7 +169,6 @@ class MainMenu extends StatelessWidget {
 
                   const SizedBox(height: 8),
 
-                  // Subtitle
                   const Text(
                     'STAR SPACE RUNNER',
                     style: TextStyle(
@@ -203,7 +181,7 @@ class MainMenu extends StatelessWidget {
 
                   const SizedBox(height: 28),
 
-                  // START GAME BUTTON
+                  // START Butonu -> ArcadeHub'a Yönlendirir
                   Container(
                     width: double.infinity,
                     constraints: const BoxConstraints(maxWidth: 280),
@@ -219,7 +197,10 @@ class MainMenu extends StatelessWidget {
                     ),
                     child: OutlinedButton(
                       onPressed: () {
-                        game.startGame();
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => const ArcadeHub()),
+                        );
                       },
                       style: OutlinedButton.styleFrom(
                         backgroundColor: const Color(0xFF131524).withOpacity(0.85),
@@ -234,7 +215,7 @@ class MainMenu extends StatelessWidget {
                           Icon(Icons.play_arrow_rounded, color: Colors.white, size: 22),
                           SizedBox(width: 8),
                           Text(
-                            'START GAME',
+                            'START',
                             style: TextStyle(
                               color: Colors.white,
                               fontSize: 14,
@@ -249,7 +230,6 @@ class MainMenu extends StatelessWidget {
 
                   const Spacer(),
 
-                  // Footer version info
                   const Text(
                     'MISSION CONTROL  •  v1.0',
                     style: TextStyle(
@@ -259,7 +239,6 @@ class MainMenu extends StatelessWidget {
                       letterSpacing: 1.5,
                     ),
                   ),
-
                   const SizedBox(height: 8),
                 ],
               ),
