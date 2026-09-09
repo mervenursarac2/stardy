@@ -12,10 +12,14 @@ import 'pause_overlay.dart';
 class ArcadeHub extends StatelessWidget {
   const ArcadeHub({super.key});
 
+  static const Color background = Color(0xFF0B0D17);
+  static const Color purple = Color(0xFFBC13FE);
+  static const Color cyan = Color(0xFF00F2FF);
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0B0D17),
+      backgroundColor: background,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
@@ -25,7 +29,11 @@ class ArcadeHub extends StatelessWidget {
               IconButton(
                 padding: EdgeInsets.zero,
                 alignment: Alignment.centerLeft,
-                icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFF00F2FF), size: 20),
+                icon: const Icon(
+                  Icons.arrow_back_ios_new_rounded,
+                  color: cyan,
+                  size: 20,
+                ),
                 onPressed: () => Navigator.pop(context),
               ),
               const SizedBox(height: 12),
@@ -42,7 +50,7 @@ class ArcadeHub extends StatelessWidget {
               const Text(
                 'SELECT MISSION PROTOCOL',
                 style: TextStyle(
-                  color: Color(0xFF00F2FF),
+                  color: cyan,
                   fontSize: 11,
                   fontWeight: FontWeight.w700,
                   letterSpacing: 2,
@@ -50,21 +58,21 @@ class ArcadeHub extends StatelessWidget {
               ),
               const SizedBox(height: 28),
 
-              // 1. Oyun: Space Runner (Tıklandığı an oyun başlar)
+              // 1. OYUN: SPACE RUNNER
               _GameCard(
                 title: 'SPACE RUNNER',
                 subtitle: 'Dodge meteors & navigate deep void',
                 icon: Icons.rocket_launch_rounded,
-                accentColor: const Color(0xFFBC13FE),
+                accentColor: purple,
                 onTap: () {
-                  final game = StardyGame(gameStateProvider: context.read<GameStateProvider>());
                   Navigator.push(
                     context,
                     MaterialPageRoute(
                       builder: (_) => Scaffold(
                         body: GameWidget<StardyGame>(
-                          game: game,
-                          // Ara menü atlanır, doğrudan HUD gelir:
+                          game: StardyGame(
+                            gameStateProvider: context.read<GameStateProvider>(),
+                          ),
                           initialActiveOverlays: const ['GameHud'],
                           overlayBuilderMap: {
                             'GameHud': (ctx, g) => GameHud(game: g),
@@ -75,25 +83,23 @@ class ArcadeHub extends StatelessWidget {
                       ),
                     ),
                   );
-                  // Flame döngüsünü gecikmesiz doğrudan başlatır
-                  WidgetsBinding.instance.addPostFrameCallback((_) {
-                    game.startGame();
-                  });
                 },
               ),
 
               const SizedBox(height: 18),
 
-              // 2. Oyun: Cosmic Tetris (Tıklandığı an başlar)
+              // 2. OYUN: COSMIC TETRIS
               _GameCard(
                 title: 'COSMIC TETRIS',
                 subtitle: 'Align galactic matrix fragments',
                 icon: Icons.grid_view_rounded,
-                accentColor: const Color(0xFF00F2FF),
+                accentColor: cyan,
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (_) => const TetrisScreen()),
+                    MaterialPageRoute(
+                      builder: (_) => const TetrisScreen(),
+                    ),
                   );
                 },
               ),
@@ -174,7 +180,11 @@ class _GameCard extends StatelessWidget {
                 ],
               ),
             ),
-            Icon(Icons.arrow_forward_ios_rounded, color: accentColor, size: 16),
+            Icon(
+              Icons.arrow_forward_ios_rounded,
+              color: accentColor,
+              size: 16,
+            ),
           ],
         ),
       ),

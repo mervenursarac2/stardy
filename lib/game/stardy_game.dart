@@ -9,7 +9,6 @@ import 'components/obstacle_spawner.dart';
 import 'components/obstacle.dart';
 
 enum GameState {
-  menu,
   playing,
   gameOver,
 }
@@ -19,7 +18,7 @@ class StardyGame extends FlameGame with HasCollisionDetection {
 
   StardyGame({required this.gameStateProvider});
 
-  GameState gameState = GameState.menu;
+  GameState gameState = GameState.playing;
 
   double elapsedTime = 0;
   final ValueNotifier<double> hudNotifier = ValueNotifier<double>(0);
@@ -37,25 +36,27 @@ class StardyGame extends FlameGame with HasCollisionDetection {
   Future<void> onLoad() async {
     await super.onLoad();
 
-    // ==========================================
-    // ASSET PRELOAD (ÖNBELLEKLEME)
-    // ==========================================
+    // Varlıkları yükle
     await images.loadAll([
       'rocket.png',
       'meteor.png',
     ]);
 
-    // Dinamik Uzay ve Yıldız Arkaplanı
     add(_ProceduralSpaceParallax());
+  }
 
-    pauseEngine();
+  @override
+  void onMount() {
+    super.onMount();
+    // Ekran boyutu tam olarak burada kesinleşir!
+    startGame();
   }
 
   @override
   void update(double dt) {
     super.update(dt);
 
-    if (isPlaying) {
+    if (isPlaying && !paused) {
       elapsedTime += dt;
       hudNotifier.value = elapsedTime;
     }
@@ -66,18 +67,13 @@ class StardyGame extends FlameGame with HasCollisionDetection {
     elapsedTime = 0;
     gameState = GameState.playing;
 
-    add(
-      Player(
-        position: Vector2(
-          size.x / 2,
-          size.y - 140,
-        ),
-      ),
-    );
+    // Ekranın tam alt-orta noktasına roketi yerleştir
+    final startX = size.x > 0 ? size.x / 2 : 180.0;
+    final startY = size.y > 0 ? size.y - 120 : 500.0;
 
+    add(Player(position: Vector2(startX, startY)));
     add(ObstacleSpawner(this));
 
-    overlays.remove('MainMenu');
     overlays.remove('GameOver');
     overlays.remove('Pause');
     overlays.add('GameHud');
@@ -91,7 +87,6 @@ class StardyGame extends FlameGame with HasCollisionDetection {
     gameState = GameState.gameOver;
     pauseEngine();
 
-    // En yüksek skoru State Management üzerinden güncelle
     gameStateProvider.updateScore(score);
 
     overlays.remove('GameHud');
@@ -99,34 +94,13 @@ class StardyGame extends FlameGame with HasCollisionDetection {
   }
 
   void restartGame() {
-    _clearGame();
-    elapsedTime = 0;
-    gameState = GameState.playing;
-
-    add(
-      Player(
-        position: Vector2(
-          size.x / 2,
-          size.y - 140,
-        ),
-      ),
-    );
-
-    add(ObstacleSpawner(this));
-
-    overlays.remove('GameOver');
-    overlays.remove('MainMenu');
-    overlays.remove('Pause');
-    overlays.add('GameHud');
-
-    resumeEngine();
+    startGame();
   }
 
   void returnToMainMenu() {
     pauseEngine();
     _clearGame();
     elapsedTime = 0;
-    gameState = GameState.menu;
 
     overlays.clear();
     if (buildContext != null) {
@@ -135,8 +109,6 @@ class StardyGame extends FlameGame with HasCollisionDetection {
   }
 
   void togglePause() {
-    if (!isPlaying && gameState != GameState.playing) return;
-
     if (paused) {
       resumeEngine();
       overlays.remove('Pause');
@@ -163,15 +135,17 @@ class _ProceduralSpaceParallax extends PositionComponent with HasGameRef<StardyG
   int get priority => -10;
 
   @override
-  Future<void> onLoad() async {
-    await super.onLoad();
+  void onMount() {
+    super.onMount();
     size = gameRef.size;
+    _starsLayer1.clear();
+    _starsLayer2.clear();
 
-    for (int i = 0; i < 45; i++) {
-      _starsLayer1.add(Vector2(_rnd.nextDouble() * size.x, _rnd.nextDouble() * size.y));
+    for (int i = 0; i < 40; i++) {
+      _starsLayer1.add(Vector2(_rnd.nextDouble() * (size.x > 0 ? size.x : 400), _rnd.nextDouble() * (size.y > 0 ? size.y : 800)));
     }
-    for (int i = 0; i < 25; i++) {
-      _starsLayer2.add(Vector2(_rnd.nextDouble() * size.x, _rnd.nextDouble() * size.y));
+    for (int i = 0; i < 20; i++) {
+      _starsLayer2.add(Vector2(_rnd.nextDouble() * (size.x > 0 ? size.x : 400), _rnd.nextDouble() * (size.y > 0 ? size.y : 800)));
     }
   }
 
@@ -194,7 +168,7 @@ class _ProceduralSpaceParallax extends PositionComponent with HasGameRef<StardyG
     }
 
     for (var s in _starsLayer2) {
-      s.y += 180 * dt;
+      s.y += 160 * dt;
       if (s.y > size.y) {
         s.y = 0;
         s.x = _rnd.nextDouble() * size.x;
@@ -206,27 +180,12 @@ class _ProceduralSpaceParallax extends PositionComponent with HasGameRef<StardyG
   void render(Canvas canvas) {
     super.render(canvas);
 
-    final bgPaint = Paint()
-      ..shader = RadialGradient(
-        center: const Alignment(0, -0.4),
-        radius: 1.2,
-        colors: [
-          const Color(0xFFBC13FE).withOpacity(0.18),
-          const Color(0xFF00F2FF).withOpacity(0.06),
-          Colors.transparent,
-        ],
-      ).createShader(Rect.fromLTWH(0, 0, size.x, size.y));
-
-    canvas.drawRect(Rect.fromLTWH(0, 0, size.x, size.y), bgPaint);
-
     final starPaint1 = Paint()..color = const Color(0xFFD4C0D7).withOpacity(0.5);
     for (var s in _starsLayer1) {
       canvas.drawCircle(Offset(s.x, s.y), 1.2, starPaint1);
     }
 
-    final starPaint2 = Paint()
-      ..color = const Color(0xFF00F2FF)
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 1);
+    final starPaint2 = Paint()..color = const Color(0xFF00F2FF);
     for (var s in _starsLayer2) {
       canvas.drawCircle(Offset(s.x, s.y), 1.8, starPaint2);
     }
